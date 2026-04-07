@@ -1,21 +1,25 @@
-# Projecct Name 
+# Web_Dev_project
+
+## Project name
 
 ## Description
+.
 
+## Tech Stack
 
+### Frontend:
+- Angular
+- TypeScript
 
-### Frontend
--Angular
--TypeScript
+### Backend:
+- Django
+- Django REST Framework (DRF)
 
-### Backend
--Django
--Django REST Framework(DRF)
-
-## Project Structure 
-
+## Project Structure
+- backend/ # Django project
+- frontend/ # Angular project
 
 ## Team Members
--Izbassarov Darkhan
--Kainar Suleiman
--Abdrakhman Yeskendir
+- Izbassarov Darkhan
+- Kainar Suleiman
+- Abdrakhman Yeskendir

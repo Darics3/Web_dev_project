@@ -6,9 +6,9 @@
 
 | Name | Role | GitHub |
 |------|------|--------|
-| Member 1 | Backend (Django) | AbdrakhmanYeskendir |
-| Member 2 | Frontend (Angular) | KainarSuleiman|
-| Member 3 | Integration & Docs | Izbasarov Darkhan |
+| Abdrakhman Yeskendir| Backend (Django) | AbdrakhmanYeskendir |
+| Kainar Suleiman | Frontend (Angular) | KainarSuleiman|
+| Izbasarov Darkhan | Integration & Docs | Darics3 |
 
 ---
 

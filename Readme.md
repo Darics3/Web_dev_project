@@ -1,8 +1,21 @@
-# 🛍 Baibol — Store Management Platform
+# Baibol - Store Management Platform
 
-> **Web Development Project** | Angular + Django | KBTU
+Web Development Project (KBTU): Angular + Django/DRF + JWT.
 
-## 👥 Group Members
+## Team Members
+
+- Abdrakhman Yeskendir - Backend (Django, DRF, JWT)
+- Kainar Suleiman - Frontend (Angular, UI, guards)
+- Izbassarov Darkhan - Integration, testing, documentation
+
+## Project Description
+
+Baibol is a store management platform where users can manage products, categories, and orders.
+The project supports role-based access:
+
+- `admin` - full access
+- `manager` - can manage products/categories and moderate orders
+- `customer` - can browse products/categories and create own orders
 
 | Name | Role | GitHub |
 |------|------|--------|
@@ -10,50 +23,78 @@
 | Kainar Suleiman | Frontend (Angular) | KainarSuleiman|
 | Izbasarov Darkhan | Integration & Docs | Darics3 |
 
----
+- Frontend: Angular 17, TypeScript, HttpClient, standalone components
+- Backend: Django 4.2, Django REST Framework, SimpleJWT
+- Database: SQLite (dev)
 
-## 📋 Project Description
+## Implemented Requirements Checklist
 
-**Baibol** is a store management platform that allows shop owners to manage products,
-track orders, and organize inventory categories — all in one place.
+### Frontend (Angular)
 
-**Tech Stack:**
-- **Frontend:** Angular 17 (standalone components, reactive forms, HTTP interceptors)
-- **Backend:** Django 4.2 + Django REST Framework + JWT Auth
-- **Database:** SQLite (development) / PostgreSQL (production)
+- API services and interfaces: `frontend/src/app/services/`, `frontend/src/app/models/`
+- 4+ click events with API calls: login/register/create/update/delete/status actions
+- 4+ `ngModel` controls across login/products/orders/categories forms
+- Angular 17 `@if` and `@for` templates
+- Routes: `/login`, `/dashboard`, `/products`, `/orders`, `/categories`
+- JWT interceptor for Bearer token
+- API error handling in UI (alerts/messages on failed requests)
 
----
+### Backend (Django + DRF)
 
-## ✅ Requirements Checklist
+- 4 models: `Category`, `Product`, `Order`, `OrderItem`
+- Custom manager: `ActiveProductManager`
+- 2+ ForeignKey relations (implemented 5+)
+- Plain serializers: `LoginSerializer`, `RegisterSerializer`
+- Model serializers: `CategorySerializer`, `ProductSerializer`, `OrderSerializer`
+- FBV auth endpoints: register/login/logout/me
+- CBV APIView endpoints: products/orders/categories
+- JWT authentication via `djangorestframework-simplejwt`
+- Full Product CRUD
+- Object ownership on create (`created_by=request.user`)
+- CORS for Angular dev host
+- Postman collection included
 
-### Front-End (Angular)
-- [x] Interfaces and services to interact with back-end APIs (`ApiService`, `AuthService`)
-- [x] 4+ click events that trigger API requests (Login, Register, Save Product, Delete, Update Status, Add to Order…)
-- [x] 4+ `[(ngModel)]` form controls (Login form: username, password; Register form: username, email, password, confirm; Product form; Order form)
-- [x] Basic CSS styling applied to all components (`styles.css`)
-- [x] Routing module with 5 named routes: `/login`, `/dashboard`, `/products`, `/orders`, `/categories`
-- [x] `@for` to loop over data, `@if` for conditional rendering (Angular 17 syntax)
-- [x] JWT authentication: HTTP interceptor (`auth.interceptor.ts`), login page, logout functionality
-- [x] Angular Service using `HttpClient` for all API communication (`ApiService`)
-- [x] API errors handled gracefully (error messages shown on failed requests)
+## Role-Based Access
 
-### Back-End (Django + DRF)
-- [x] 4 models: `Category`, `Product`, `Order`, `OrderItem`
-- [x] 1 custom model manager: `ActiveProductManager` (returns in-stock products)
-- [x] 2+ ForeignKey relationships (Product→Category, Product→User, Order→User, OrderItem→Order, OrderItem→Product)
-- [x] 2 `serializers.Serializer`: `LoginSerializer`, `RegisterSerializer`
-- [x] 2 `serializers.ModelSerializer`: `ProductSerializer`, `OrderSerializer` (+ `CategorySerializer`)
-- [x] 2 FBV with DRF decorators: `register_view`, `login_view` / `logout_view` / `current_user_view`
-- [x] 2+ CBV using `APIView`: `ProductListCreateView`, `ProductDetailView`, `OrderListCreateView`, `OrderDetailView`, `CategoryListCreateView`, `CategoryDetailView`
-- [x] Token-based authentication (JWT via `djangorestframework-simplejwt`)
-- [x] Full CRUD for `Product` model (GET list, GET detail, POST, PUT, PATCH, DELETE)
-- [x] Objects linked to authenticated user (`created_by=request.user`)
-- [x] CORS configured via `django-cors-headers` (allows `http://localhost:4200`)
-- [x] Postman collection committed to repo (`postman_collection.json`)
+- Backend checks role via `UserProfile` model and DRF permissions.
+- Frontend shows/hides management actions by role.
+- Navbar and dashboard show current user role.
 
----
+## API Endpoints
 
-## 🚀 Setup & Run
+### Auth
+
+- `POST /api/auth/register/`
+- `POST /api/auth/login/`
+- `POST /api/auth/logout/`
+- `GET /api/auth/me/`
+- `POST /api/auth/refresh/`
+
+### Products
+
+- `GET /api/products/`
+- `POST /api/products/` (admin/manager)
+- `GET /api/products/{id}/`
+- `PUT/PATCH /api/products/{id}/` (admin/manager)
+- `DELETE /api/products/{id}/` (admin/manager)
+
+### Orders
+
+- `GET /api/orders/` (customer sees own orders; admin/manager sees all)
+- `POST /api/orders/`
+- `GET /api/orders/{id}/`
+- `PATCH /api/orders/{id}/`
+- `DELETE /api/orders/{id}/`
+
+### Categories
+
+- `GET /api/categories/`
+- `POST /api/categories/` (admin/manager)
+- `GET /api/categories/{id}/`
+- `PUT /api/categories/{id}/` (admin/manager)
+- `DELETE /api/categories/{id}/` (admin/manager)
+
+## Setup
 
 ### Backend
 
@@ -62,13 +103,9 @@ cd backend
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
-
 python manage.py migrate
-python manage.py createsuperuser
 python manage.py runserver
 ```
-
-Backend runs at: `http://localhost:8000`
 
 ### Frontend
 
@@ -78,67 +115,10 @@ npm install
 ng serve
 ```
 
-Frontend runs at: `http://localhost:4200`
+## Demo Accounts (example)
 
----
+- admin: full permissions
+- manager: content management permissions
+- customer: read + order creation only
 
-## 📡 API Endpoints
-
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| POST | `/api/auth/register/` | ❌ | Register new user |
-| POST | `/api/auth/login/` | ❌ | Login, get JWT tokens |
-| POST | `/api/auth/logout/` | ✅ | Blacklist refresh token |
-| GET | `/api/auth/me/` | ✅ | Get current user |
-| GET | `/api/products/` | ✅ | List products (search, filter) |
-| POST | `/api/products/` | ✅ | Create product |
-| GET | `/api/products/{id}/` | ✅ | Get product detail |
-| PUT | `/api/products/{id}/` | ✅ | Update product |
-| DELETE | `/api/products/{id}/` | ✅ | Delete product |
-| GET | `/api/orders/` | ✅ | List orders (filter by status) |
-| POST | `/api/orders/` | ✅ | Create order |
-| PATCH | `/api/orders/{id}/` | ✅ | Update order status |
-| DELETE | `/api/orders/{id}/` | ✅ | Delete order |
-| GET | `/api/categories/` | ✅ | List categories |
-| POST | `/api/categories/` | ✅ | Create category |
-| PUT | `/api/categories/{id}/` | ✅ | Update category |
-| DELETE | `/api/categories/{id}/` | ✅ | Delete category |
-
----
-
-## 📁 Project Structure
-
-```
-baibol/
-├── backend/
-│   ├── api/
-│   │   ├── models.py        # 4 models + custom manager
-│   │   ├── serializers.py   # 2x Serializer + 2x ModelSerializer
-│   │   ├── views.py         # 2 FBV + 4 CBV
-│   │   └── urls.py
-│   ├── baibol_backend/
-│   │   ├── settings.py      # CORS, JWT, DRF config
-│   │   └── urls.py
-│   ├── manage.py
-│   └── requirements.txt
-├── frontend/
-│   └── src/app/
-│       ├── components/
-│       │   ├── login/       # Login & Register
-│       │   ├── dashboard/   # Stats overview
-│       │   ├── products/    # Product CRUD
-│       │   ├── orders/      # Order management
-│       │   ├── categories/  # Category CRUD
-│       │   └── navbar/      # Navigation
-│       ├── services/
-│       │   ├── auth.service.ts   # Auth (login/logout/register)
-│       │   └── api.service.ts    # All API calls via HttpClient
-│       ├── interceptors/
-│       │   └── auth.interceptor.ts  # JWT token injector
-│       ├── guards/
-│       │   └── auth.guard.ts     # Route protection
-│       ├── models/
-│       │   └── models.ts         # TypeScript interfaces
-│       └── app.routes.ts         # 5 named routes
-└── postman_collection.json
-```
+Use Django admin to adjust roles if needed.

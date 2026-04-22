@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Category, Product, Order, OrderItem
+from .models import Category, Product, Order, OrderItem, UserProfile
+from .permissions import IsAdminOrManager, get_user_role
 from .serializers import (
     LoginSerializer, RegisterSerializer,
     CategorySerializer, ProductSerializer, OrderSerializer, OrderItemSerializer,
@@ -23,6 +24,16 @@ def get_tokens_for_user(user):
     return {
         'refresh': str(refresh),
         'access':  str(refresh.access_token),
+    }
+
+
+def serialize_user(user):
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    return {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'role': profile.role,
     }
 
 
@@ -42,7 +53,7 @@ def register_view(request):
         tokens = get_tokens_for_user(user)
         return Response({
             'message': 'User registered successfully.',
-            'user': {'id': user.id, 'username': user.username, 'email': user.email},
+            'user': serialize_user(user),
             'tokens': tokens,
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -72,7 +83,7 @@ def login_view(request):
     tokens = get_tokens_for_user(user)
     return Response({
         'message': 'Login successful.',
-        'user': {'id': user.id, 'username': user.username, 'email': user.email},
+        'user': serialize_user(user),
         'tokens': tokens,
     })
 
@@ -102,9 +113,7 @@ def current_user_view(request):
     """
     user = request.user
     return Response({
-        'id':       user.id,
-        'username': user.username,
-        'email':    user.email,
+        **serialize_user(user),
     })
 
 
@@ -132,6 +141,8 @@ class ProductListCreateView(APIView):
         return Response(serializer.data)
 
     def post(self, request):
+        if not IsAdminOrManager().has_permission(request, self):
+            return Response({'error': 'Only manager/admin can create products.'}, status=status.HTTP_403_FORBIDDEN)
         serializer = ProductSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(created_by=request.user)   # link to authenticated user
@@ -167,6 +178,8 @@ class ProductDetailView(APIView):
         product = self._get_object(pk)
         if product is None:
             return Response({'error': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not IsAdminOrManager().has_permission(request, self):
+            return Response({'error': 'Only manager/admin can update products.'}, status=status.HTTP_403_FORBIDDEN)
         serializer = ProductSerializer(product, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -177,6 +190,8 @@ class ProductDetailView(APIView):
         product = self._get_object(pk)
         if product is None:
             return Response({'error': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not IsAdminOrManager().has_permission(request, self):
+            return Response({'error': 'Only manager/admin can update products.'}, status=status.HTTP_403_FORBIDDEN)
         serializer = ProductSerializer(product, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -187,6 +202,8 @@ class ProductDetailView(APIView):
         product = self._get_object(pk)
         if product is None:
             return Response({'error': 'Product not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not IsAdminOrManager().has_permission(request, self):
+            return Response({'error': 'Only manager/admin can delete products.'}, status=status.HTTP_403_FORBIDDEN)
         product.delete()
         return Response({'message': 'Product deleted.'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -199,7 +216,10 @@ class OrderListCreateView(APIView):
 
     def get(self, request):
         status_filter = request.query_params.get('status', '')
-        orders = Order.objects.filter(created_by=request.user).prefetch_related('items__product')
+        if get_user_role(request.user) in ('admin', 'manager'):
+            orders = Order.objects.all().prefetch_related('items__product')
+        else:
+            orders = Order.objects.filter(created_by=request.user).prefetch_related('items__product')
         if status_filter:
             orders = orders.filter(status=status_filter)
         serializer = OrderSerializer(orders, many=True)
@@ -234,6 +254,11 @@ class OrderDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def _get_object(self, pk, user):
+        if get_user_role(user) in ('admin', 'manager'):
+            try:
+                return Order.objects.get(pk=pk)
+            except Order.DoesNotExist:
+                return None
         try:
             return Order.objects.get(pk=pk, created_by=user)
         except Order.DoesNotExist:
@@ -274,6 +299,8 @@ class CategoryListCreateView(APIView):
         return Response(CategorySerializer(categories, many=True).data)
 
     def post(self, request):
+        if not IsAdminOrManager().has_permission(request, self):
+            return Response({'error': 'Only manager/admin can create categories.'}, status=status.HTTP_403_FORBIDDEN)
         serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -300,6 +327,8 @@ class CategoryDetailView(APIView):
         cat = self._get_object(pk)
         if cat is None:
             return Response({'error': 'Category not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not IsAdminOrManager().has_permission(request, self):
+            return Response({'error': 'Only manager/admin can update categories.'}, status=status.HTTP_403_FORBIDDEN)
         serializer = CategorySerializer(cat, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -310,5 +339,7 @@ class CategoryDetailView(APIView):
         cat = self._get_object(pk)
         if cat is None:
             return Response({'error': 'Category not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not IsAdminOrManager().has_permission(request, self):
+            return Response({'error': 'Only manager/admin can delete categories.'}, status=status.HTTP_403_FORBIDDEN)
         cat.delete()
         return Response({'message': 'Category deleted.'}, status=status.HTTP_204_NO_CONTENT)

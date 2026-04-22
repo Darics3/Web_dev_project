@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Category, Product, Order, OrderItem
+from .models import Category, Product, Order, OrderItem, UserProfile
 
 
 # ════════════════════════════════════════════════════════════════
@@ -24,6 +24,7 @@ class RegisterSerializer(serializers.Serializer):
     email      = serializers.EmailField()
     password   = serializers.CharField(write_only=True, min_length=6)
     password2  = serializers.CharField(write_only=True, label='Confirm password')
+    role       = serializers.ChoiceField(choices=UserProfile.ROLE_CHOICES, required=False, default=UserProfile.ROLE_CUSTOMER)
 
     def validate(self, data):
         if data['password'] != data['password2']:
@@ -34,11 +35,13 @@ class RegisterSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         validated_data.pop('password2')
+        role = validated_data.pop('role', UserProfile.ROLE_CUSTOMER)
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
         )
+        UserProfile.objects.create(user=user, role=role)
         return user
 
 

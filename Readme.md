@@ -17,7 +17,11 @@ The project supports role-based access:
 - `manager` - can manage products/categories and moderate orders
 - `customer` - can browse products/categories and create own orders
 
-## Tech Stack
+| Name | Role | GitHub |
+|------|------|--------|
+| Abdrakhman Yeskendir| Backend (Django) | AbdrakhmanYeskendir |
+| Kainar Suleiman | Frontend (Angular) | KainarSuleiman|
+| Izbasarov Darkhan | Integration & Docs | Darics3 |
 
 - Frontend: Angular 17, TypeScript, HttpClient, standalone components
 - Backend: Django 4.2, Django REST Framework, SimpleJWT

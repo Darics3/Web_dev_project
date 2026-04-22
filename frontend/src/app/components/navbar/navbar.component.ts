@@ -16,7 +16,7 @@ import { AuthService } from '../../services/auth.service';
         <a routerLink="/orders"      routerLinkActive="active">Orders</a>
         <a routerLink="/categories"  routerLinkActive="active">Categories</a>
         <span style="color:#888; font-size:.85rem; margin: 0 8px;">
-          {{ auth.getUser()?.username }}
+          {{ auth.getUser()?.username }} ({{ auth.getUser()?.role }})
         </span>
         <button class="btn-logout" (click)="auth.logout()">Logout</button>
       </nav>
